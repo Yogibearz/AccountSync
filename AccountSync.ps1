@@ -1,7 +1,7 @@
 #Requires -version 2.0
 #
-# version : '0.3' 
-# 2012/9/25 下午 06:01:18
+# version : '0.4' 
+# 2013/2/22 上午 09:07:54
 #
 # Displayname Rule
 # 1. 有 firstname & lastname and mail 含 @umc.com and 中文姓名 : 姓名(英文)
@@ -10,12 +10,15 @@
 # 4. 有 firstname & lastname and 無 mail and 英文姓名 : 名 姓
 # 5. 無 firstname : 工號
 #
-# Powershell -command "& {.\AccountSync.ps1}"
+# Powershell -command "& {.\Set-LyncCredential.ps1 jcsecfile.txt}"
+# Powershell -command "& {.\AccountSync.0.4.ps1}"
 
 set-psdebug -strict
 
+$lyncdomain = "@lpoc.com"
+
 add-PSSnapin quest.activeroles.admanagement
-Set-QADProgressPolicy -ShowProgress $false | out-null
+#Set-QADProgressPolicy -ShowProgress $false | out-null
 $pwd = Get-Location
 
 #set-location $pwd
@@ -24,8 +27,8 @@ $pwd = Get-Location
 $LogFile = "$pwd\AccountSync.log"
 Write-Log "=== Job Begin ==="
 
-$secfile = "$pwd\secfile.txt"
-$ACC = 'umc\00002940'
+$secfile = "$pwd\jcsecfile.txt"
+$ACC = 'umc\00003058'
 
 if (Test-Path $secfile) {
 	 . .\Get-LyncCredential.ps1 $ACC $secfile
@@ -75,7 +78,7 @@ foreach ($a in $acc) {
    	     $tObj | Add-Member NoteProperty Name $a.Name
    	     $tObj | Add-Member NoteProperty LMAccount $("UMC\" + $a.Name)
    	     $tObj | Add-Member NoteProperty DisplayName $name
-   	     $tObj | Add-Member NoteProperty UPN $($a.Name + "@uttra.local")
+   	     $tObj | Add-Member NoteProperty UPN $($a.Name + $lyncdomain)
       } else {
    	     # 無中文姓名
    	     if ($a.firstname -match '^[A-Z]') {
@@ -87,14 +90,14 @@ foreach ($a in $acc) {
    	     $tObj | Add-Member NoteProperty Name $a.Name
    	     $tObj | Add-Member NoteProperty LMAccount $("UMC\" + $a.Name)
    	     $tObj | Add-Member NoteProperty DisplayName $name
-   	     $tObj | Add-Member NoteProperty UPN $($a.Name + "@uttra.local")
+   	     $tObj | Add-Member NoteProperty UPN $($a.Name + $lyncdomain)
       }
    } else {
    	     $tObj | Add-Member NoteProperty Alias $a.Name
    	     $tObj | Add-Member NoteProperty Name $a.Name
    	     $tObj | Add-Member NoteProperty LMAccount $("UMC\" + $a.Name)
    	     $tObj | Add-Member NoteProperty DisplayName $a.Name
-   	     $tObj | Add-Member NoteProperty UPN $($a.Name + "@uttra.local")
+   	     $tObj | Add-Member NoteProperty UPN $($a.Name + $lyncdomain)
    }
    $result += $tObj
 } 
