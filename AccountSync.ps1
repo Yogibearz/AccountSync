@@ -1,7 +1,7 @@
 #Requires -version 2.0
 #
-# version : '0.4' 
-# 2013/2/22 上午 09:07:54
+# version : '0.5' 
+# 2013/2/22 下午 03:40:46
 #
 # Displayname Rule
 # 1. 有 firstname & lastname and mail 含 @umc.com and 中文姓名 : 姓名(英文)
@@ -11,7 +11,7 @@
 # 5. 無 firstname : 工號
 #
 # Powershell -command "& {.\Set-LyncCredential.ps1 jcsecfile.txt}"
-# Powershell -command "& {.\AccountSync.0.4.ps1}"
+# Powershell -command "& {.\AccountSync.0.5.ps1}"
 
 set-psdebug -strict
 
@@ -27,16 +27,20 @@ $pwd = Get-Location
 $LogFile = "$pwd\AccountSync.log"
 Write-Log "=== Job Begin ==="
 
-$secfile = "$pwd\jcsecfile.txt"
-$ACC = 'umc\00003058'
+$secfile = "$pwd\secfile.txt"
+$ACC = 'umc\00002940'
+#$secfile = "$pwd\jcsecfile.txt"
+#$ACC = 'umc\00003058'
 
 if (Test-Path $secfile) {
+	 #Write-Log "Get Credential"
 	 . .\Get-LyncCredential.ps1 $ACC $secfile
 } else {
 	 Write-Log "$secfile missing"
 	 exit -200
 }	 
 
+#Write-Log "Got Credential"
 
 $outfile = $("$pwd\ASync.{0}.csv" -f (get-date -format "yyyyMMdd-HHmmss"))
 New-Variable name
@@ -53,9 +57,13 @@ $startT = get-date
 #         | Where {$_.Name -notlike '*\$' -and $_.Name -notlike "IUSR_*" -and $_.Name -notlike "IWAM_*" `
 #         	         -and $_.Name -notlike "SystemMailbox*"} | Sort-Object Name | Foreach-Object {
 
+#Write-Log "Fetch account begin"
+
 $Lfilter = "(&(!name=IUSR_*)(!name=IWAM_*)(!name=SystemMailbox*)(!name=*$))"
 #$acc = Get-QADUser -SearchRoot "CN=users,DC=umc,DC=com" -sizelimit 0 -LDAPFilter $Lfilter | Sort-Object Name #| Foreach-Object {
-$acc = Get-QADUser -SearchRoot "CN=users,DC=umc,DC=com" -sizelimit 0 -LDAPFilter $Lfilter -Credential $credential | Sort-Object Name
+#$acc = Get-QADUser -SearchRoot "CN=users,DC=umc,DC=com" -sizelimit 0 -LDAPFilter $Lfilter -Credential $credential | Sort-Object Name
+$acc = Get-QADUser -SearchRoot "CN=users,DC=umc,DC=com" -sizelimit 0 -LDAPFilter $Lfilter | Sort-Object Name
+
 
 foreach ($a in $acc) {
    $count++
